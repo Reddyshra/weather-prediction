@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            width: 100%;
+            background: linear-gradient(100deg, rgb(68, 124, 255), rgb(254, 187, 64));
+            padding: 10px 0;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.385);
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        nav ul li {
+            display: inline;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        nav ul li a:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        footer {
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+            background: linear-gradient(100deg, rgb(68, 124, 255), rgb(254, 187, 64));
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="1.html">Home</a></li>
+                <li><a href="#">News Updates</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <form class="weatherForm">
+            <input type="text" class="cityInput" placeholder="Enter city">
+            <button type="submit">Get Weather</button>
+        </form>
+
+        <div class="card" style="display:none"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Weather Wise. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        const weatherForm = document.querySelector(".weatherForm");
+        const cityInput = document.querySelector(".cityInput");
+        const card = document.querySelector(".card");
+        const apiKey = "6f858100a3e8fb72828336426443c398";
+
+        weatherForm.addEventListener("submit", async event => {
+            event.preventDefault();
+            const city = cityInput.value;
+
+            if (city) {
+                try {
+                    const weatherData = await getWeatherData(city);
+                    displayWeatherInfo(weatherData);
+                } catch (error) {
+                    console.error(error);
+                    displayError("No Such City Exists.. :(");
+                }
+            } else {
+                displayError("PLEASE ENTER A CITY");
+            }
+        });
+
+        async function getWeatherData(city) {
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
+            const response = await fetch(apiUrl);
+
+            if (!response.ok) {
+                throw new Error("Couldn't fetch Weather Data");
+            }
+
+            return await response.json();
+        }
+
+        function displayWeatherInfo(data) {
+            const { name: city, main: { temp, humidity }, weather: [{ description, id }] } = data;
+
+            card.textContent = "";
+            card.style.display = "flex";
+
+            const cityDisplay = document.createElement("h1");
+            const tempDisplay = document.createElement("p");
+            const humidityDisplay = document.createElement("p");
+            const descDisplay = document.createElement("p");
+            const weatherEmoji = document.createElement("p");
+
+            cityDisplay.textContent = city;
+            tempDisplay.textContent = `${(temp - 273.15).toFixed(1)} °C`;
+            humidityDisplay.textContent = `Humidity: ${humidity} %`;
+            descDisplay.textContent = description;
+            weatherEmoji.textContent = getWeatherEmoji(id);
+
+            cityDisplay.classList.add("cityDisplay");
+            tempDisplay.classList.add("tempDisplay");
+            humidityDisplay.classList.add("humidityDisplay");
+            descDisplay.classList.add("descDisplay");
+            weatherEmoji.classList.add("weatherEmoji");
+
+            card.appendChild(cityDisplay);
+            card.appendChild(tempDisplay);
+            card.appendChild(humidityDisplay);
+            card.appendChild(descDisplay);
+            card.appendChild(weatherEmoji);
+        }
+
+        function getWeatherEmoji(weatherId) {
+            switch (true) {
+                case (weatherId >= 200 && weatherId < 300):
+                    return "⛈️";
+                case (weatherId >= 300 && weatherId < 400):
+                    return "🌦️";
+                case (weatherId >= 500 && weatherId < 600):
+                    return "🌧️";
+                case (weatherId >= 600 && weatherId < 700):
+                    return "❄️";
+                case (weatherId >= 700 && weatherId < 800):
+                    return "🌫️";
+                case (weatherId === 800):
+                    return "☀️";
+                case (weatherId >= 801 && weatherId < 810):
+                    return "☁️";
+                default:
+                    return "❓";
+            }
+        }
+
+        function displayError(message) {
+            const errorDisplay = document.createElement("p");
+            errorDisplay.textContent = message;
+            errorDisplay.classList.add("errorDisplay");
+
+            card.textContent = "";
+            card.style.display = "flex";
+            card.appendChild(errorDisplay);
+        }
+    </script>
+</body>
+</html>
+
+
+
